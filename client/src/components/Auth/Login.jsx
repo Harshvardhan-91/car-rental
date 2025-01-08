@@ -7,10 +7,12 @@ import {
 } from "firebase/auth";
 import { auth } from "./Firebase.js";
 import { useNavigate } from "react-router-dom";
-import ForgotPassword from './ForgotPassword';
+import ForgotPassword from "./ForgotPassword";
 import useAuthStore from "../../store/store.js";
+import Loading from "../Loading/Loading";
 
 const Login = () => {
+  const [isLoading, setIsLoading] = useState(false);
   const [showForgotPassword, setShowForgotPassword] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
@@ -35,16 +37,20 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setIsLoading(true); // Start loading
     try {
       await signInWithEmailAndPassword(auth, formData.email, formData.password);
       alert("Login successful!");
     } catch (error) {
       console.error("Login error:", error);
       setError("Failed to login. Please check your credentials and try again.");
+    } finally {
+      setIsLoading(false); // Stop loading
     }
   };
 
   const handleGoogleSignIn = async () => {
+    setIsLoading(true); // Start loading
     const provider = new GoogleAuthProvider();
     try {
       const result = await signInWithPopup(auth, provider);
@@ -53,8 +59,15 @@ const Login = () => {
     } catch (error) {
       console.error("Google login error:", error);
       setError("Failed to login with Google. Please try again.");
+    } finally {
+      setIsLoading(false); // Stop loading
     }
   };
+
+  if (isLoading) {
+    // Show the Loading component if isLoading is true
+    return <Loading />;
+  }
 
   return (
     <div style={styles.container}>
@@ -160,7 +173,7 @@ const styles = {
     fontSize: "14px",
     marginTop: "5px",
     textDecoration: "underline",
-  }
+  },
 };
 
 export default Login;

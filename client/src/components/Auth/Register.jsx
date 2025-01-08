@@ -8,6 +8,7 @@ import {
 import { auth } from "./Firebase.js";
 import { useNavigate } from "react-router-dom";
 import useAuthStore from "../../store/store.js";
+import Loading from "../Loading/Loading"; // import Loading component
 
 const Register = () => {
   const [formData, setFormData] = useState({
@@ -16,6 +17,7 @@ const Register = () => {
     confirmPassword: "",
   });
   const [error, setError] = useState(null);
+  const [loading, setLoading] = useState(false); // state to control loading
   const navigate = useNavigate();
   const setUser = useAuthStore((state) => state.setUser);
 
@@ -32,6 +34,7 @@ const Register = () => {
   }, [navigate, setUser]);
 
   const handleGoogleSignIn = async () => {
+    setLoading(true); // start loading
     const provider = new GoogleAuthProvider();
     try {
       const result = await signInWithPopup(auth, provider);
@@ -40,6 +43,8 @@ const Register = () => {
     } catch (error) {
       console.error("Google sign-in error:", error);
       setError(error.message);
+    } finally {
+      setLoading(false); // stop loading
     }
   };
 
@@ -50,23 +55,27 @@ const Register = () => {
       return;
     }
 
+    setLoading(true); // start loading
     try {
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         formData.email,
         formData.password
       );
-      setUser(userCredential.user); 
+      setUser(userCredential.user);
       alert("Registration successful!");
     } catch (error) {
       console.error("Registration error:", error);
       setError(error.message);
+    } finally {
+      setLoading(false); // stop loading
     }
   };
 
   return (
     <div style={styles.container}>
       <h1>Register</h1>
+      {loading && <Loading />} {/* Show loading indicator if loading is true */}
       <form onSubmit={handleSubmit} style={styles.form}>
         <input
           type="email"
